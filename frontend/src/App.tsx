@@ -150,7 +150,14 @@ export function App() {
     setError(null);
     try {
       const delta = await action();
-      setSnap((current) => (current ? mergeSnapshot(current, delta) : current));
+      // Remote agent runs rewrite chat/notes server-side; refetch the bundle
+      // so we replace instead of appending duplicates via mergeSnapshot.
+      if (repo?.mode === "remote" && route.name === "detail") {
+        const detail = await repo.getTicket(route.id);
+        setSnap((current) => (current ? replaceBundle(current, detail) : current));
+      } else {
+        setSnap((current) => (current ? mergeSnapshot(current, delta) : current));
+      }
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
