@@ -1,0 +1,8 @@
+# Agent layer (Vybhavi). Merge into backend/requirements.txt when the backend lands.
+langgraph>=0.3,<2
+langchain-core>=0.3
+pytest>=8
+
+# Optional: only needed when AGENT_LLM_PROVIDER is set
+# langchain-anthropic>=0.3
+# langchain-openai>=0.3
