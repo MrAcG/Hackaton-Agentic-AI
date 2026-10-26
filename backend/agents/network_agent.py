@@ -201,23 +201,50 @@ class NetworkAgent:
 
     def ask_user(self, state: TicketState) -> dict[str, Any]:
         name = state["ticket"].get("requester") or "there"
-        cause = state["findings"]["root_cause"]
+        cause = (state.get("findings") or {}).get("root_cause", "unknown")
         pending = state.get("pending")
+        last = (state.get("last_user_reply") or "").strip()
         if pending and state.get("next_step") == "ask_again":
-            question = "Sorry, I couldn't tell whether that fixed it. Is it working now? (yes / no)"
+            if pending.get("kind") == "fix":
+                question = (
+                    "Thanks for trying that. I still need a clear yes/no so I can verify on my side: "
+                    "is it working now? Reply with something like \"yes, it works\" or \"no, still broken\"."
+                )
+            else:
+                question = (
+                    f"Thanks{f' — I noted: \"{last[:120]}\"' if last else ''}. "
+                    "I still need a bit more to diagnose this like an L1 analyst would:\n"
+                    "• What exact action fails (open VPN, load a site, join Wi-Fi, etc.)?\n"
+                    "• Any error text or screenshot description?\n"
+                    "• Office, home, or hotspot — and did this ever work on this device?"
+                )
             kind = pending["kind"]
-        elif cause in ROOT_CAUSES:
+        elif cause in ROOT_CAUSES and ROOT_CAUSES[cause].get("user_fixable"):
             info = ROOT_CAUSES[cause]
             question = (
-                f"Hi {name}, I ran network diagnostics and found the likely cause: {info['summary']}.\n\n"
-                f"Please try this:\n{info['user_action']}\n\nReply here to let me know if it worked."
+                f"Hi {name}, I treated this like an L1 network ticket: I checked our runbooks and ran "
+                f"diagnostics. Likely cause: {info['summary']}.\n\n"
+                f"Please try this fix:\n{info['user_action']}\n\n"
+                "When you're done, reply here and tell me whether it worked. "
+                "I'll re-run the checks to confirm before I close the ticket."
             )
             kind = "fix"
         else:
+            ran = bool(state.get("diagnostics"))
+            lead = (
+                f"Hi {name}, I picked up your ticket and reviewed what you wrote"
+                + (", then ran an initial network sweep" if ran else "")
+                + ". I don't have a safe diagnosis yet, so I need to interview you the way a human L1 would."
+            )
             question = (
-                f"Hi {name}, I ran a full set of network checks (VPN, Wi-Fi signal, DNS, gateway) and everything "
-                "looks healthy from my side. Can you tell me more: what exactly fails (a specific site or app), "
-                "any error message you see, and whether you're in the office or working remotely?"
+                f"{lead}\n\n"
+                "Please answer whatever you can (bullet replies are fine):\n"
+                "1. What are you trying to do that fails?\n"
+                "2. Exact error message, if any?\n"
+                "3. Are you in the office, at home (VPN), or on mobile hotspot?\n"
+                "4. When did it start, and did anything change (password, laptop, travel, update)?\n\n"
+                "I'll use your answers to pick the next diagnostics and either walk you through a fix "
+                "or escalate to Network L2 with evidence."
             )
             kind = "clarify"
         message = self._say(question)
@@ -284,12 +311,26 @@ class NetworkAgent:
 
     def resolve(self, state: TicketState) -> dict[str, Any]:
         cause = state["findings"]["root_cause"]
-        resolution = f"Root cause: {ROOT_CAUSES[cause]['label']}. User applied the documented fix; verification checks passed."
+        info = ROOT_CAUSES[cause]
+        evidence = (state.get("findings") or {}).get("evidence", "")
+        resolution = (
+            f"Root cause: {info['label']}. User applied the documented fix; verification checks passed. "
+            f"Evidence: {evidence}"
+        )
+        chat = (
+            f"Great news - I re-ran the diagnostics and they look healthy now, so I'm resolving this ticket.\n\n"
+            f"Summary of what we did:\n"
+            f"• Problem: {info['summary']}\n"
+            f"• Evidence: {evidence}\n"
+            f"• Fix you applied: the steps I sent earlier\n"
+            f"• Verification: post-fix checks passed\n\n"
+            "If it comes back, open a new ticket and reference this one — we won't make you start from scratch."
+        )
         return {
             "status": "resolved",
             "resolution": resolution,
             "pending": None,
-            "chat": [self._say("Thanks! I re-ran the checks and everything looks healthy now, so I'm marking this ticket resolved. If the problem comes back, just open a new ticket.")],
+            "chat": [self._say(chat)],
             "work_notes": [note(AGENT, f"RESOLVED. {resolution}")],
         }
 

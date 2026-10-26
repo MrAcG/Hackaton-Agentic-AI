@@ -1,17 +1,35 @@
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 TicketState = Literal["New", "In Progress", "Pending", "Resolved", "Escalated", "Closed"]
 Priority = Literal["1 - Critical", "2 - High", "3 - Moderate", "4 - Low"]
-AssignmentGroup = Literal["Unassigned", "Network", "Application", "Finance"]
+AssignmentGroup = Literal[
+    "Unassigned",
+    "Network",
+    "Endpoint",
+    "Identity",
+    "Application",
+    "Collaboration",
+    "Security",
+    "Finance",
+    "HR Ops",
+]
 Category = Literal[
-    "Network / Connectivity",
-    "Application / NetSuite",
-    "Finance / Policy",
     "Other",
+    "Network / Connectivity",
+    "Endpoint / Hardware",
+    "Identity & Access",
+    "Business Applications",
+    "Email & Collaboration",
+    "Security",
+    "Finance / Policy",
+    "HR / People",
+    # legacy values still accepted from older tickets
+    "Application / NetSuite",
+    "Let AI decide",
 ]
 MessageRole = Literal["employee", "agent", "system"]
 AuthorType = Literal["system", "agent", "human"]
@@ -61,10 +79,11 @@ class ChatMessageOut(BaseModel):
 class NewTicketInput(BaseModel):
     caller: str
     caller_email: str
-    category: Category
     priority: Priority
     short_description: str = Field(min_length=1)
     description: str = Field(min_length=1)
+    # Optional; AI categorizes from title/description. Kept for backward compatibility.
+    category: Category | None = None
 
 
 class TicketPatch(BaseModel):
@@ -88,6 +107,7 @@ class TicketBundle(BaseModel):
     ticket: TicketOut
     work_notes: list[WorkNoteOut]
     messages: list[ChatMessageOut]
+    agent: dict[str, Any] | None = None
 
 
 class MutationDelta(BaseModel):

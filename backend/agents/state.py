@@ -20,6 +20,7 @@ class Ticket(TypedDict, total=False):
     description: str
     requester: str
     priority: str
+    category: str  # portal category, e.g. "Finance / Policy"
     # Demo only: forces the mock network environment into a scenario
     # (see tools/network_tools.py SCENARIOS) regardless of the ticket text.
     mock_scenario: str

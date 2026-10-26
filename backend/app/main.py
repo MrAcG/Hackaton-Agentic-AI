@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+load_dotenv()  # OPENAI_API_KEY / AGENT_LLM_* for the agent layer
 
 from backend.app.config import get_settings
 from backend.app.database import init_db
@@ -15,10 +18,12 @@ async def lifespan(_: FastAPI):
     try:
         from backend.app.agents_bridge import get_agent_service
 
-        get_agent_service()
-    except Exception:
+        svc = get_agent_service()
+        provider = svc.settings.llm_provider
+        print(f"[agents] LLM provider={provider!r} model={svc.settings.llm_model!r} active={svc.llm is not None}")
+    except Exception as exc:
         # Agents optional at boot; routes still serve persistence
-        pass
+        print(f"[agents] warmup skipped: {exc}")
     yield
 
 
@@ -38,4 +43,15 @@ app.include_router(tickets.router, prefix="/api")
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "app": settings.app_name}
+    from backend.app.agents_bridge import get_agent_service
+
+    try:
+        svc = get_agent_service()
+        llm_info = {
+            "provider": svc.settings.llm_provider,
+            "model": svc.settings.llm_model,
+            "llm_active": svc.llm is not None,
+        }
+    except Exception as exc:
+        llm_info = {"error": str(exc)}
+    return {"status": "ok", "app": settings.app_name, "agents": llm_info}

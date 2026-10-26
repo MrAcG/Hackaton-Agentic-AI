@@ -9,7 +9,7 @@ import { IncidentDetail } from "./components/IncidentDetail";
 import { IncidentList } from "./components/IncidentList";
 import { NewIncident } from "./components/NewIncident";
 import { mergeSnapshot, replaceBundle } from "./domain";
-import type { AssignmentGroup, MutationDelta, PortalRole, Snapshot, TicketPatch, TicketState } from "./types";
+import type { AgentSnapshot, AssignmentGroup, MutationDelta, PortalRole, Snapshot, TicketPatch, TicketState } from "./types";
 import { DEMO_CALLER, STATES } from "./types";
 
 type Route = { name: "list" } | { name: "new" } | { name: "detail"; id: string };
@@ -48,6 +48,7 @@ export function App() {
   const [query, setQuery] = useState("");
   const [stateFilter, setStateFilter] = useState<StateFilter>("All");
   const [groupFilter, setGroupFilter] = useState<GroupFilter>("All");
+  const [agentByTicket, setAgentByTicket] = useState<Record<string, AgentSnapshot | null>>({});
 
   useEffect(() => {
     if (!window.location.hash) {
@@ -95,7 +96,9 @@ export function App() {
     repo
       .getTicket(route.id)
       .then((bundle) => {
-        if (!cancel) setSnap((current) => (current ? replaceBundle(current, bundle) : current));
+        if (cancel) return;
+        setSnap((current) => (current ? replaceBundle(current, bundle) : current));
+        setAgentByTicket((current) => ({ ...current, [route.id]: bundle.agent ?? null }));
       })
       .catch((err: unknown) => {
         if (!cancel) setError(err instanceof Error ? err.message : "Could not load this incident.");
@@ -155,6 +158,7 @@ export function App() {
       if (repo?.mode === "remote" && route.name === "detail") {
         const detail = await repo.getTicket(route.id);
         setSnap((current) => (current ? replaceBundle(current, detail) : current));
+        setAgentByTicket((current) => ({ ...current, [route.id]: detail.agent ?? null }));
       } else {
         setSnap((current) => (current ? mergeSnapshot(current, delta) : current));
       }
@@ -277,6 +281,7 @@ export function App() {
             messages={[...snap.messages.filter((message) => message.ticket_id === detailTicket.id)].sort((a, b) =>
               a.created_at.localeCompare(b.created_at),
             )}
+            agent={agentByTicket[detailTicket.id]}
             role={role}
             busy={busy}
             onBack={() => go({ name: "list" })}

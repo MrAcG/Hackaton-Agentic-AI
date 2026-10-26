@@ -11,7 +11,7 @@ from .config import AgentSettings
 
 log = logging.getLogger(__name__)
 
-_DEFAULT_MODELS = {"anthropic": "claude-sonnet-4-5", "openai": "gpt-4o-mini"}
+_DEFAULT_MODELS = {"anthropic": "claude-sonnet-4-5", "openai": "gpt-4o"}
 
 
 def get_chat_model(settings: AgentSettings) -> Any | None:

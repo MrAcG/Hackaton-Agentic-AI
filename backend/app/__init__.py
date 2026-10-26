@@ -1,1 +1,1 @@
-"""FastAPI ITSM API (Aquil) — persists tickets and wires AgentService."""
+"""FastAPI ITSM API — persists tickets and wires AgentService."""

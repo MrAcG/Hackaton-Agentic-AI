@@ -54,7 +54,7 @@ def create_ticket(payload: NewTicketInput, db: Session = Depends(get_db)) -> Mut
         description=payload.description.strip(),
         caller=payload.caller.strip(),
         caller_email=payload.caller_email.strip(),
-        category=payload.category,
+        category=payload.category or "Other",
         priority=payload.priority,
         state="New",
         assignment_group="Unassigned",
@@ -98,6 +98,7 @@ def create_ticket(payload: NewTicketInput, db: Session = Depends(get_db)) -> Mut
                 "description": ticket.description,
                 "requester": ticket.caller,
                 "priority": ticket.priority,
+                # No caller category — orchestrator AI classifies from title/description.
             }
         )
         apply_agent_view(db, ticket, view)

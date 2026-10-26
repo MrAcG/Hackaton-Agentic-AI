@@ -10,15 +10,15 @@ Suggested length: ~12–14 slides. Speak to business / industry leaders.
 
 ### Slide 1 — Team
 - Full team name: **Agentic Ops** (or your chosen brand)
-- Aquil, Vybhavi, Divyansh + photos
+- Team members + photos *(fill in for your event)*
 
 ### Slide 2 — Problem
-- Repetitive L1 tickets: VPN, access, policy questions  
+- Repetitive L1 tickets: VPN, MFA, hardware, apps, policy questions  
 - Slow employee wait times; analysts stuck in runbook + chat loops  
 
 ### Slide 3 — Who feels the pain
 - Direct: employees, service desk  
-- Indirect: Network / App / Finance ops  
+- Indirect: Network / Endpoint / Identity / App / Collaboration / Security / Finance / HR ops  
 
 ### Slide 4 — Competitors / alternatives
 - Traditional ITSM alone (ServiceNow queues, no autonomous L1)  
@@ -32,15 +32,15 @@ Suggested length: ~12–14 slides. Speak to business / industry leaders.
 
 ### Slide 6 — Purpose (research takeaway)
 - Agentic AI fits multi-step, tool-using, department-specific work  
-- One deep Network path proves value before expanding  
+- Triage first, then specialist depth (Network proves the full loop)  
 
 ### Slide 7 — How it works (diagram)
-- Portal → Orchestrator → Network / App / Finance → resolve or escalate  
+- Portal → Triage orchestrator → 8 specialist teams → resolve or escalate  
 - Fixed agents; session per ticket  
 
 ### Slide 8 — Product showcase
 - Screenshot: incident list (API mode)  
-- Screenshot: VPN ticket chat Pending  
+- Screenshot: triage / specialist chat Pending  
 
 ### Slide 9 — Product showcase continued
 - Screenshot: resolved ticket + work notes / diagnostics narrative  
@@ -52,17 +52,17 @@ Suggested length: ~12–14 slides. Speak to business / industry leaders.
 
 ### Slide 11 — Responsible AI / evaluation
 - Mock tools only; escalate sensitive/failed cases  
-- Test results: 32 agent tests; 5/5 HTTP scenarios (see EVALUATION.md)  
+- Test results: see `docs/EVALUATION.md`  
 
 ### Slide 12 — Future vision
 - Real ServiceNow / Teams adapters  
-- Deeper App identity workflows with approvals  
+- Deeper Identity / Collaboration workflows with approvals  
 - Persistent checkpoints + richer RAG  
 
 ### Slide 13 — Thank you / Q&A
 
 ### Slide 14 — Appendix / references
-- GitHub link, KB sources, LangGraph, hackathon resources  
+- Repository URL, KB sources, LangGraph, hackathon resources  
 
 ---
 

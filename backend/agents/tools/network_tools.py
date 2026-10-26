@@ -23,10 +23,23 @@ CORE_SWITCH = "core-sw-01.bos.corp.local"
 # Symptom keywords -> the scenario a ticket most likely describes.
 # Order matters: earlier entries win when several match.
 _SYMPTOM_PATTERNS: list[tuple[str, tuple[str, ...]]] = [
-    ("site_outage", ("outage", "everyone", "whole office", "entire floor", "nobody can", "all users", "whole team")),
-    ("vpn_auth_expired", ("vpn", "globalprotect", "anyconnect", "remote access", "working from home")),
-    ("dns_failure", ("dns", "server not found", "can't be reached", "cannot be reached", "can't resolve", "not resolving", "hostname")),
-    ("weak_wifi", ("wifi", "wi-fi", "wireless", "signal", "slow", "lag", "laggy", "drops", "freez", "buffer", "packet loss")),
+    ("site_outage", (
+        "outage", "everyone", "whole office", "entire floor", "nobody can", "all users", "whole team",
+        "building is down", "site is down", "entire site",
+    )),
+    ("vpn_auth_expired", (
+        "vpn", "globalprotect", "anyconnect", "remote access", "working from home", "wfh",
+        "auth token", "authentication expired", "mfa loop", "can't sign in to vpn", "cannot sign in to vpn",
+        "vpn won't connect", "vpn will not connect", "corporate network from home",
+    )),
+    ("dns_failure", (
+        "dns", "server not found", "can't be reached", "cannot be reached", "can't resolve", "not resolving",
+        "hostname", "intranet", "site can't be reached", "dns_probe_finished", "name resolution",
+    )),
+    ("weak_wifi", (
+        "wifi", "wi-fi", "wireless", "signal", "slow", "lag", "laggy", "drops", "freez", "buffer",
+        "packet loss", "keeps disconnecting", "spotty", "bars", "access point", "ethernet",
+    )),
 ]
 
 
