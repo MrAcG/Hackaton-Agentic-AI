@@ -26,8 +26,13 @@ class ClassifierTests(unittest.TestCase):
         self.check("Slow wifi", "packet loss on wi-fi in the office", "network")
 
     def test_routes_application(self):
-        self.check("Outlook crash", "Outlook crashes when I open it", "application")
-        self.check("Locked out", "my password expired and my account is locked", "application")
+        self.check("NetSuite error", "NetSuite will not save the journal entry", "application")
+
+    def test_routes_collaboration(self):
+        self.check("Outlook crash", "Outlook crashes when I open it", "collaboration")
+
+    def test_routes_identity(self):
+        self.check("Locked out", "my password expired and my account is locked", "identity")
 
     def test_routes_finance(self):
         self.check("Reimbursement", "my expense report reimbursement hasn't arrived", "finance")
@@ -187,7 +192,7 @@ class NetworkNodeFlowTests(unittest.TestCase):
             self.reply(s, "hmm")
             self.assertEqual(s["next_step"], "ask_again")
             merge(s, self.agent.ask_user(s))
-            self.assertIn("yes / no", s["chat"][-1]["content"])
+            self.assertIn("yes/no", s["chat"][-1]["content"].replace(" ", ""))
         self.reply(s, "hmm")
         self.assertEqual(s["next_step"], "escalate")
 
@@ -203,10 +208,15 @@ class NetworkNodeFlowTests(unittest.TestCase):
 
 
 class StubAgentTests(unittest.TestCase):
-    def test_finance_shares_runbook_and_escalates(self):
-        out = StubAgent("finance", KB)({"ticket": {"id": "F1", "title": "Expense reimbursement", "description": "my expense report reimbursement is late", "requester": "Jo"}})
-        self.assertEqual((out["status"], out["escalation"]["to"]), ("escalated", "Finance Ops"))
-        self.assertIn("payroll cycle", out["chat"][0]["content"])
+    def test_finance_intake_then_finish_escalates(self):
+        agent = StubAgent("finance", KB)
+        ticket = {"id": "F1", "title": "Expense reimbursement", "description": "my expense report reimbursement is late", "requester": "Jo"}
+        intake = agent.intake({"ticket": ticket})
+        self.assertEqual(intake["status"], "awaiting_user")
+        self.assertIn("expense", intake["chat"][0]["content"].lower())
+        finish = agent.finish({"ticket": ticket, "last_user_reply": "Submitted in Concur two weeks ago, $240"})
+        self.assertEqual((finish["status"], finish["escalation"]["to"]), ("escalated", "Finance Ops"))
+        self.assertTrue(finish["chat"][0]["content"])
 
 
 if __name__ == "__main__":

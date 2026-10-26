@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import type { Category, NewTicketInput, PortalRole, Priority } from "../types";
-import { CATEGORIES, DEMO_CALLER, DEMO_EMAIL, PRIORITIES, isCategory, isPriority } from "../types";
+import type { NewTicketInput, PortalRole, Priority } from "../types";
+import { DEMO_CALLER, DEMO_EMAIL, PRIORITIES, isPriority } from "../types";
 
 interface NewIncidentProps {
   role: PortalRole;
@@ -12,7 +12,6 @@ interface NewIncidentProps {
 export function NewIncident({ role, busy, onCancel, onCreate }: NewIncidentProps) {
   const [caller, setCaller] = useState(role === "caller" ? DEMO_CALLER : "");
   const [email, setEmail] = useState(role === "caller" ? DEMO_EMAIL : "");
-  const [category, setCategory] = useState<Category>("Network / Connectivity");
   const [priority, setPriority] = useState<Priority>("3 - Moderate");
   const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
@@ -36,7 +35,6 @@ export function NewIncident({ role, busy, onCancel, onCreate }: NewIncidentProps
     await onCreate({
       caller: caller.trim(),
       caller_email: email.trim(),
-      category,
       priority,
       short_description: shortDescription.trim(),
       description: description.trim(),
@@ -51,7 +49,10 @@ export function NewIncident({ role, busy, onCancel, onCreate }: NewIncidentProps
       <div className="page-head">
         <div>
           <h1>New incident</h1>
-          <p className="lede">New incidents stay unassigned until an agent routes them.</p>
+          <p className="lede">
+            Describe the problem. Triage AI asks a few questions, then routes you to the right specialist team
+            (Network, Endpoint, Identity, Application, Collaboration, Security, Finance, or HR Ops).
+          </p>
         </div>
       </div>
       <form className="card card-pad form-grid" onSubmit={(event) => void submit(event)}>
@@ -74,22 +75,7 @@ export function NewIncident({ role, busy, onCancel, onCreate }: NewIncidentProps
             autoComplete="email"
           />
         </label>
-        <label>
-          Category
-          <select
-            value={category}
-            onChange={(event) => {
-              if (isCategory(event.target.value)) setCategory(event.target.value);
-            }}
-          >
-            {CATEGORIES.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
+        <label className="span-2">
           Priority
           <select
             value={priority}
@@ -111,11 +97,17 @@ export function NewIncident({ role, busy, onCancel, onCreate }: NewIncidentProps
             onChange={(event) => setShortDescription(event.target.value)}
             autoFocus
             required
+            placeholder="e.g. VPN keeps failing when I work from home"
           />
         </label>
         <label className="span-2">
           Description
-          <textarea value={description} onChange={(event) => setDescription(event.target.value)} required />
+          <textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            required
+            placeholder="What happens, any error text, when it started…"
+          />
         </label>
         {formError ? (
           <p className="form-error span-2" role="alert">

@@ -92,7 +92,7 @@ export function createTicketRecord(snapshot: Snapshot, input: NewTicketInput, no
     description: input.description.trim(),
     caller: input.caller.trim(),
     caller_email: input.caller_email.trim(),
-    category: input.category,
+    category: input.category ?? "Other",
     priority: input.priority,
     state: "New",
     assignment_group: "Unassigned",

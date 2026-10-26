@@ -9,6 +9,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from backend.app.models import Message, Ticket, WorkNote, utcnow
+from backend.agents.teams import TEAM_CATEGORY, TEAM_LABEL
 
 STATUS_TO_PORTAL = {
     "new": "New",
@@ -18,17 +19,9 @@ STATUS_TO_PORTAL = {
     "escalated": "Escalated",
 }
 
-TEAM_TO_GROUP = {
-    "network": "Network",
-    "application": "Application",
-    "finance": "Finance",
-}
-
-GROUP_ASSIGNEE = {
-    "Network": "Network Agent",
-    "Application": "Application Agent",
-    "Finance": "Finance Agent",
-}
+TEAM_TO_GROUP = {team: label for team, label in TEAM_LABEL.items()}
+TEAM_TO_CATEGORY = dict(TEAM_CATEGORY)
+GROUP_ASSIGNEE = {label: f"{label} Agent" for label in TEAM_LABEL.values()}
 
 
 def _parse_at(value: str | None) -> datetime:
@@ -59,6 +52,8 @@ def apply_agent_view(db: Session, ticket: Ticket, view: dict[str, Any]) -> None:
     if team in TEAM_TO_GROUP:
         ticket.assignment_group = TEAM_TO_GROUP[team]
         ticket.assigned_to = GROUP_ASSIGNEE[ticket.assignment_group]
+        if team in TEAM_TO_CATEGORY:
+            ticket.category = TEAM_TO_CATEGORY[team]
 
     ticket.updated_at = utcnow()
 
@@ -83,7 +78,7 @@ def apply_agent_view(db: Session, ticket: Ticket, view: dict[str, Any]) -> None:
 
     for index, item in enumerate(view.get("work_notes") or []):
         author = item.get("author") or "Agent"
-        author_type = "system" if author.lower() == "orchestrator" else "agent"
+        author_type = "system" if "orchestrator" in author.lower() else "agent"
         key = f"note:{index}:{author}:{item.get('note', '')}"
         db.add(
             WorkNote(

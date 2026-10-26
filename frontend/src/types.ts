@@ -4,14 +4,29 @@ export type TicketState = (typeof STATES)[number];
 export const PRIORITIES = ["1 - Critical", "2 - High", "3 - Moderate", "4 - Low"] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
-export const GROUPS = ["Unassigned", "Network", "Application", "Finance"] as const;
+export const GROUPS = [
+  "Unassigned",
+  "Network",
+  "Endpoint",
+  "Identity",
+  "Application",
+  "Collaboration",
+  "Security",
+  "Finance",
+  "HR Ops",
+] as const;
 export type AssignmentGroup = (typeof GROUPS)[number];
 
 export const CATEGORIES = [
-  "Network / Connectivity",
-  "Application / NetSuite",
-  "Finance / Policy",
   "Other",
+  "Network / Connectivity",
+  "Endpoint / Hardware",
+  "Identity & Access",
+  "Business Applications",
+  "Email & Collaboration",
+  "Security",
+  "Finance / Policy",
+  "HR / People",
 ] as const;
 export type Category = (typeof CATEGORIES)[number];
 
@@ -61,10 +76,11 @@ export interface Snapshot {
 export interface NewTicketInput {
   caller: string;
   caller_email: string;
-  category: Category;
   priority: Priority;
   short_description: string;
   description: string;
+  /** Optional; omitted so the orchestrator AI categorizes from the text. */
+  category?: Category;
 }
 
 export type TicketPatch = Partial<Pick<Ticket, "state" | "assignment_group" | "priority">>;
@@ -75,10 +91,36 @@ export interface MutationDelta {
   messages?: ChatMessage[];
 }
 
+export interface AgentSnapshot {
+  ticket_id: string;
+  status: string;
+  team?: string | null;
+  awaiting_user?: boolean;
+  question?: string | null;
+  classification?: {
+    team?: string;
+    confidence?: number;
+    reason?: string;
+    method?: string;
+  } | null;
+  findings?: {
+    root_cause?: string;
+    evidence?: string;
+    incident?: string;
+  } | null;
+  diagnostics?: Array<{ tool: string; args?: unknown; output?: unknown; run?: number }>;
+  kb_hits?: Array<{ doc_id: string; title?: string; score?: number }>;
+  resolution?: string | null;
+  escalation?: { to?: string; reason?: string; [key: string]: unknown } | null;
+  chat?: unknown[];
+  work_notes?: unknown[];
+}
+
 export interface TicketBundle {
   ticket: Ticket;
   work_notes: WorkNote[];
   messages: ChatMessage[];
+  agent?: AgentSnapshot | null;
 }
 
 export const DEMO_CALLER = "Alex Rivera";

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import type { ChatMessage, PortalRole, Ticket, TicketPatch, WorkNote } from "../types";
+import type { AgentSnapshot, ChatMessage, PortalRole, Ticket, TicketPatch, WorkNote } from "../types";
 import { GROUPS, PRIORITIES, STATES, isGroup, isPriority, isState } from "../types";
 import { formatWhen } from "../format";
 import { PriorityBadge, StateBadge } from "./Badges";
+import { AgentActivity } from "./AgentActivity";
 
 interface IncidentDetailProps {
   ticket: Ticket;
   notes: WorkNote[];
   messages: ChatMessage[];
+  agent?: AgentSnapshot | null;
   role: PortalRole;
   busy: boolean;
   onBack: () => void;
@@ -20,6 +22,7 @@ export function IncidentDetail({
   ticket,
   notes,
   messages,
+  agent,
   role,
   busy,
   onBack,
@@ -74,8 +77,11 @@ export function IncidentDetail({
             <span className="muted">{ticket.assignment_group}</span>
             <span className="muted">{ticket.caller}</span>
           </div>
-          {ticket.id === "INC0010042" && ticket.state === "In Progress" ? (
-            <p className="demo-line">Waiting on the caller to refresh the Corp-VPN certificate.</p>
+          {agent?.awaiting_user ? (
+            <p className="demo-line">An AI specialist is waiting on your reply in chat — answer like you would to L1 support.</p>
+          ) : null}
+          {ticket.state === "Resolved" && agent?.resolution ? (
+            <p className="demo-line ok-line">Agent verified the fix and resolved this incident.</p>
           ) : null}
         </div>
         {desk ? (
@@ -108,7 +114,7 @@ export function IncidentDetail({
             <div className="fields">
               <Field label="Caller" value={ticket.caller} />
               <Field label="Email" value={ticket.caller_email} />
-              <Field label="Category" value={ticket.category} />
+              <Field label="AI category" value={ticket.category} />
               <Field label="Contact type" value={ticket.contact_type} />
               <Field label="Opened" value={formatWhen(ticket.opened_at)} />
               <Field label="Updated" value={formatWhen(ticket.updated_at)} />
@@ -174,10 +180,12 @@ export function IncidentDetail({
             </div>
           </article>
 
+          <AgentActivity agent={agent} />
+
           {desk ? (
             <article className="card card-pad">
               <h2>Work notes</h2>
-              <p className="hint">Internal. The caller does not see these notes.</p>
+              <p className="hint">Internal ITSM trail. Callers see Agent activity above instead.</p>
               {notes.length === 0 ? <p className="hint">No work notes yet.</p> : null}
               <div>
                 {notes.map((item) => (

@@ -1,4 +1,4 @@
-# Agent layer (Vybhavi). Merge into backend/requirements.txt when the backend lands.
+# Agent layer only. Prefer installing from the repo-root requirements.txt for the full stack.
 langgraph>=0.3,<2
 langchain-core>=0.3
 pytest>=8

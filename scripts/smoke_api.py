@@ -21,7 +21,6 @@ def main() -> int:
         json={
             "caller": "Alex Rivera",
             "caller_email": "alex.rivera@company.example",
-            "category": "Network / Connectivity",
             "priority": "2 - High",
             "short_description": "VPN authentication failed",
             "description": "My VPN says authentication expired and I cannot get on the corporate network.",
